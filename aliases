@@ -1,0 +1,211 @@
+alias ..="cd .."
+alias ...="cd ../.."
+
+alias h='cd ~'
+alias c='clear'
+alias art=artisan
+
+alias phpspec='vendor/bin/phpspec'
+alias phpunit='vendor/bin/phpunit'
+alias serve=serve-laravel
+
+alias xoff='sudo phpdismod -s cli xdebug'
+alias xon='sudo phpenmod -s cli xdebug'
+
+function artisan() {
+    php artisan "$@"
+}
+
+function dusk() {
+    pids=$(pidof /usr/bin/Xvfb)
+
+    if [ ! -n "$pids" ]; then
+        Xvfb :0 -screen 0 1280x960x24 &
+    fi
+
+    php artisan dusk "$@"
+}
+
+function php56() {
+    sudo update-alternatives --set php /usr/bin/php5.6
+}
+
+function php70() {
+    sudo update-alternatives --set php /usr/bin/php7.0
+}
+
+function php71() {
+    sudo update-alternatives --set php /usr/bin/php7.1
+}
+
+function php72() {
+    sudo update-alternatives --set php /usr/bin/php7.2
+}
+
+function serve-apache() {
+    if [[ "$1" && "$2" ]]
+    then
+        sudo bash /root/server/scripts/create-certificate.sh "$1"
+        sudo dos2unix /root/server/serve-apache.sh
+        sudo bash /root/server/serve-apache.sh "$1" "$2" 80 443 "${3:-7.1}"
+    else
+        echo "Error: missing required parameters."
+        echo "Usage: "
+        echo "  serve-apache domain path"
+    fi
+}
+
+function serve-laravel() {
+    if [[ "$1" && "$2" ]]
+    then
+        sudo bash /root/server/create-certificate.sh "$1"
+        sudo dos2unix /root/server/serve-laravel.sh
+        sudo bash /root/server/serve-laravel.sh "$1" "$2" 80 443 "${3:-7.1}"
+    else
+        echo "Error: missing required parameters."
+        echo "Usage: "
+        echo "  serve domain path"
+    fi
+}
+
+function serve-proxy() {
+    if [[ "$1" && "$2" ]]
+    then
+        sudo dos2unix /root/server/serve-proxy.sh
+        sudo bash /root/server/serve-proxy.sh "$1" "$2" 80 443 "${3:-7.1}"
+    else
+        echo "Error: missing required parameters."
+        echo "Usage: "
+        echo "  serve-proxy domain port"
+    fi
+}
+
+function serve-silverstripe() {
+    if [[ "$1" && "$2" ]]
+    then
+        sudo bash /root/server/create-certificate.sh "$1"
+        sudo dos2unix /root/server/serve-silverstripe.sh
+        sudo bash /root/server/serve-silverstripe.sh "$1" "$2" 80 443 "${3:-7.1}"
+    else
+        echo "Error: missing required parameters."
+        echo "Usage: "
+        echo "  serve-silverstripe domain path"
+    fi
+}
+
+function serve-spa() {
+  if [[ "$1" && "$2" ]]
+  then
+    sudo bash /root/server/create-certificate.sh "$1"
+    sudo dos2unix /root/server/serve-spa.sh
+    sudo bash /root/server/serve-spa.sh "$1" "$2" 80 443 "${3:-7.1}"
+  else
+    echo "Error: missing required parameters."
+    echo "Usage: "
+    echo "  serve-spa domain path"
+  fi
+}
+
+function serve-statamic() {
+    if [[ "$1" && "$2" ]]
+    then
+        sudo bash /root/server/create-certificate.sh "$1"
+        sudo dos2unix /root/server/serve-statamic.sh
+        sudo bash /root/server/serve-statamic.sh "$1" "$2" 80 443 "${3:-7.1}"
+    else
+        echo "Error: missing required parameters."
+        echo "Usage: "
+        echo "  serve-statamic domain path"
+    fi
+}
+
+function serve-symfony2() {
+    if [[ "$1" && "$2" ]]
+    then
+        sudo bash /root/server/create-certificate.sh "$1"
+        sudo dos2unix /root/server/serve-symfony2.sh
+        sudo bash /root/server/serve-symfony2.sh "$1" "$2" 80 443 "${3:-7.1}"
+    else
+        echo "Error: missing required parameters."
+        echo "Usage: "
+        echo "  serve-symfony2 domain path"
+    fi
+}
+
+function serve-symfony4() {
+    if [[ "$1" && "$2" ]]
+    then
+        sudo bash /root/server/create-certificate.sh "$1"
+        sudo dos2unix /root/server/serve-symfony4.sh
+        sudo bash /root/server/serve-symfony4.sh "$1" "$2" 80 443 "${3:-7.1}"
+    else
+        echo "Error: missing required parameters."
+        echo "Usage: "
+        echo "  serve-symfony4 domain path"
+    fi
+}
+
+function serve-pimcore() {
+    if [[ "$1" && "$2" ]]
+    then
+        sudo bash /root/server/create-certificate.sh "$1"
+        sudo dos2unix /root/server/serve-pimcore.sh
+        sudo bash /root/server/serve-pimcore.sh "$1" "$2" 80 443 "${3:-7.1}"
+    else
+        echo "Error: missing required parameters."
+        echo "Usage: "
+        echo "  serve-pimcore domain path"
+    fi
+}
+
+function share() {
+    if [[ "$1" ]]
+    then
+        ngrok http ${@:2} -host-header="$1" 80
+    else
+        echo "Error: missing required parameters."
+        echo "Usage: "
+        echo "  share domain"
+        echo "Invocation with extra params passed directly to ngrok"
+        echo "  share domain -region=eu -subdomain=test1234"
+    fi
+}
+
+function flip() {
+    sudo bash /root/server/flip-webserver.sh
+}
+
+function __has_pv() {
+    $(hash pv 2>/dev/null);
+
+    return $?
+}
+
+function __pv_install_message() {
+    if ! __has_pv; then
+        echo $1
+        echo "Install pv with \`sudo apt-get install -y pv\` then run this command again."
+        echo ""
+    fi
+}
+
+
+
+function xphp() {
+    (php -m | grep -q xdebug)
+    if [[ $? -eq 0 ]]
+    then
+        XDEBUG_ENABLED=true
+    else
+        XDEBUG_ENABLED=false
+    fi
+
+    if ! $XDEBUG_ENABLED; then xon; fi
+
+    php \
+        -dxdebug.remote_host=192.168.10.1 \
+        -dxdebug.remote_autostart=1 \
+        "$@"
+
+    if ! $XDEBUG_ENABLED; then xoff; fi
+}
