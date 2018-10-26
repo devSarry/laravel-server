@@ -22,7 +22,7 @@ They will install all required dependencies and configure the server for product
 
 # Requirments
 
-* Ubunutu 16.04
+* Ubuntu 16.04
 * root access
 
 
